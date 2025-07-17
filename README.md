@@ -80,19 +80,6 @@ This script uses a two-pronged attack:
 2. **GitHub API (`PyGithub`)**: For all metadata. It creates a "paper trail" in each new issue
    (`Migrated from org/repo#123`) to track what's been migrated, which is the key to its idempotency.
 
-```mermaid
-flowchart TD
-    A[Start 🚀] --> B{Read config.ini};
-    B --> C{Authenticate w/ PATs};
-    C --> D[Git Push --mirror];
-    subgraph API Sync
-        D --> E[Reconcile Labels 🏷️];
-        E --> F[Reconcile Milestones 🎯];
-        F --> G[Reconcile Issues & Comments 📝];
-    end
-    G --> H[Done 🎉];
-```
-
 ---
 
 ## 🚨 The Fine Print (Caveats)
