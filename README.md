@@ -66,7 +66,7 @@ It's built to be run, re-run, and trusted.
 Once the `config.ini` is set up, just run the script. Grab a coffee; the terminal output will tell you everything.
 
 ```bash
-python robust_migrate_repo.py
+python github-migrator.py
 ```
 
 ---
