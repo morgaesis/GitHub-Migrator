@@ -23,29 +23,31 @@ class InsufficientScopesError(Exception):
     pass
 
 
-# --- GraphQL Statements ---
-ADD_COMMENT_MUTATION = "mutation AddComment($subjectId: ID!, $body: String!) { addComment(input: {subjectId: $subjectId, body: $body}) { commentEdge { node { id } } } }"
-ADD_ITEM_TO_PROJECT_MUTATION = "mutation AddItemToProject($projectId: ID!, $contentId: ID!) { addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) { item { id } } }"
-CLOSE_ISSUE_MUTATION = "mutation CloseIssue($issueId: ID!) { closeIssue(input: {issueId: $issueId}) { issue { id } } }"
-CREATE_FIELD_MUTATION = "mutation CreateField($projectId: ID!, $dataType: ProjectV2FieldType!, $name: String!, $options: [ProjectV2SingleSelectFieldOptionInput!]) { createProjectV2Field(input: { projectId: $projectId, dataType: $dataType, name: $name, singleSelectOptions: $options }) { projectV2Field { ... on ProjectV2Field { id, name } } } }"
-CREATE_ISSUE_MUTATION = "mutation CreateIssue($repoId: ID!, $title: String!, $body: String, $labelIds: [ID!], $milestoneId: ID) { createIssue(input: {repositoryId: $repoId, title: $title, body: $body, labelIds: $labelIds, milestoneId: $milestoneId}) { issue { id, number } } }"
-CREATE_LABEL_MUTATION = "mutation CreateLabel($repoId: ID!, $name: String!, $color: String!, $description: String) { createLabel(input: {repositoryId: $repoId, name: $name, color: $color, description: $description}) { label { id } } }"
-CREATE_MILESTONE_MUTATION = "mutation CreateMilestone($repoId: ID!, $title: String!, $description: String, $dueOn: DateTime) { createMilestone(input: {repositoryId: $repoId, title: $title, description: $description, dueOn: $dueOn}) { milestone { id, number } } }"
-CREATE_PROJECT_MUTATION = "mutation CreateProject($ownerId: ID!, $title: String!) { createProjectV2(input: {ownerId: $ownerId, title: $title}) { projectV2 { id } } }"
+# --- GraphQL Statements (Single-Line) ---
+GET_VIEWER_LOGIN_QUERY = "query { viewer { login } }"
+GET_REPO_OWNER_DATA_QUERY = "query GetRepoData($owner: String!, $name: String!) { repository(owner: $owner, name: $name) { id, owner { id }, isPrivate } }"
 CREATE_REPO_MUTATION = "mutation CreateRepo($ownerId: ID!, $name: String!, $visibility: RepositoryVisibility!, $description: String) { createRepository(input: {ownerId: $ownerId, name: $name, visibility: $visibility, description: $description}) { repository { id } } }"
-GET_ALL_PROJECT_ITEMS_QUERY = "query GetAllProjectItems($projectId: ID!, $cursor: String) { node(id: $projectId) { ... on ProjectV2 { items(first: 100, after: $cursor) { pageInfo { hasNextPage, endCursor }, nodes { id, content { ... on Issue { id, number, repository { nameWithOwner } }, ... on PullRequest { id, number, repository { nameWithOwner } } }, fieldValues(first: 50) { nodes { __typename, ... on ProjectV2ItemFieldTextValue { field { ... on ProjectV2Field { name } }, text }, ... on ProjectV2ItemFieldDateValue { field { ... on ProjectV2Field { name } }, date }, ... on ProjectV2ItemFieldNumberValue { field { ... on ProjectV2Field { name } }, number }, ... on ProjectV2ItemFieldSingleSelectValue { field { ... on ProjectV2Field { name } }, name }, ... on ProjectV2ItemFieldIterationValue { field { ... on ProjectV2Field { name } }, title } } } } } } } }"
-GET_ISSUES_QUERY = "query GetIssues($owner: String!, $name: String!, $cursor: String) { repository(owner: $owner, name: $name) { issues(first: 20, after: $cursor, states: [OPEN, CLOSED], orderBy: {field: CREATED_AT, direction: ASC}) { pageInfo { hasNextPage, endCursor }, nodes { id, number, title, body, state, author { login }, assignees(first: 10) { nodes { login } }, milestone { id, number }, labels(first: 20) { nodes { name } }, comments(first: 100) { nodes { author { login }, body, createdAt } } } } } }"
 GET_LABELS_QUERY = "query GetLabels($owner: String!, $name: String!, $cursor: String) { repository(owner: $owner, name: $name) { labels(first: 100, after: $cursor) { pageInfo { hasNextPage, endCursor }, nodes { id, name, color, description } } } }"
+CREATE_LABEL_MUTATION = "mutation CreateLabel($repoId: ID!, $name: String!, $color: String!, $description: String) { createLabel(input: {repositoryId: $repoId, name: $name, color: $color, description: $description}) { label { id } } }"
+UPDATE_LABEL_MUTATION = "mutation UpdateLabel($id: ID!, $name: String!, $color: String!, $description: String) { updateLabel(input: {id: $id, name: $name, color: $color, description: $description}) { label { id } } }"
 GET_MILESTONES_QUERY = "query GetMilestones($owner: String!, $name: String!, $cursor: String) { repository(owner: $owner, name: $name) { milestones(first: 100, after: $cursor, states: [OPEN, CLOSED]) { pageInfo { hasNextPage, endCursor }, nodes { id, number, title, state, description, dueOn } } } }"
+CREATE_MILESTONE_MUTATION = "mutation CreateMilestone($repoId: ID!, $title: String!, $description: String, $dueOn: DateTime) { createMilestone(input: {repositoryId: $repoId, title: $title, description: $description, dueOn: $dueOn}) { milestone { id, number } } }"
+UPDATE_MILESTONE_MUTATION = "mutation UpdateMilestone($id: ID!, $title: String, $description: String, $dueOn: DateTime, $state: MilestoneState) { updateMilestone(input: {id: $id, title: $title, description: $description, dueOn: $dueOn, state: $state}) { milestone { id } } }"
+GET_ISSUES_QUERY = "query GetIssues($owner: String!, $name: String!, $cursor: String) { repository(owner: $owner, name: $name) { issues(first: 20, after: $cursor, states: [OPEN, CLOSED], orderBy: {field: CREATED_AT, direction: ASC}) { pageInfo { hasNextPage, endCursor }, nodes { id, number, title, body, state, author { login }, milestone { id, number }, labels(first: 20) { nodes { name } }, comments(first: 100) { nodes { author { login }, body, createdAt } } } } } }"
+CREATE_ISSUE_MUTATION = "mutation CreateIssue($repoId: ID!, $title: String!, $body: String, $labelIds: [ID!], $milestoneId: ID) { createIssue(input: {repositoryId: $repoId, title: $title, body: $body, labelIds: $labelIds, milestoneId: $milestoneId}) { issue { id, number } } }"
+UPDATE_ISSUE_MUTATION = "mutation UpdateIssue($id: ID!, $title: String, $body: String, $state: IssueState, $labelIds: [ID!], $milestoneId: ID) { updateIssue(input: {id: $id, title: $title, body: $body, state: $state, labelIds: $labelIds, milestoneId: $milestoneId}) { issue { id } } }"
+ADD_COMMENT_MUTATION = "mutation AddComment($subjectId: ID!, $body: String!) { addComment(input: {subjectId: $subjectId, body: $body}) { commentEdge { node { id } } } }"
+CLOSE_ISSUE_MUTATION = "mutation CloseIssue($issueId: ID!) { closeIssue(input: {issueId: $issueId}) { issue { id } } }"
 GET_PROJECT_OWNER_ID_QUERY = (
     "query GetOwnerId($login: String!) { repositoryOwner(login: $login) { id } }"
 )
-GET_PROJECT_QUERY = "query GetProject($owner: String!, $projectName: String!) { repositoryOwner(login: $owner) { ... on ProjectV2Owner { projectsV2(first: 1, query: $projectName) { nodes { id, title, fields(first: 100) { nodes { __typename, ... on ProjectV2Field { id, name, dataType }, ... on ProjectV2IterationField { id, name, dataType, configuration { iterations { startDate, id } } }, ... on ProjectV2SingleSelectField { id, name, dataType, options { id, name } } } } } } } } }"
-GET_REPO_OWNER_DATA_QUERY = "query GetRepoData($owner: String!, $name: String!) { repository(owner: $owner, name: $name) { id, owner { id }, isPrivate } }"
-GET_VIEWER_LOGIN_QUERY = "query { viewer { login } }"
+GET_PROJECT_QUERY = "query GetProject($owner: String!, $projectName: String!) { repositoryOwner(login: $owner) { ... on ProjectV2Owner { projectsV2(first: 1, query: $projectName) { nodes { id, title, fields(first: 100) { nodes { ... on ProjectV2FieldCommon { id, name, dataType }, ... on ProjectV2IterationField { configuration { iterations { startDate, id } } }, ... on ProjectV2SingleSelectField { options { id, name, color, description } } } } } } } } }"
+CREATE_PROJECT_MUTATION = "mutation CreateProject($ownerId: ID!, $title: String!) { createProjectV2(input: {ownerId: $ownerId, title: $title}) { projectV2 { id } } }"
+CREATE_FIELD_MUTATION = "mutation CreateField($input: CreateProjectV2FieldInput!) { createProjectV2Field(input: $input) { projectV2Field { ... on ProjectV2Field { id } } } }"
+CREATE_ITERATION_FIELD_MUTATION = "mutation CreateIterationField($input: CreateProjectV2IterationFieldInput!) { createProjectV2IterationField(input: $input) { projectV2IterationField { ... on ProjectV2IterationField { id } } } }"
+GET_ALL_PROJECT_ITEMS_QUERY = "query GetAllProjectItems($projectId: ID!, $cursor: String) { node(id: $projectId) { ... on ProjectV2 { items(first: 100, after: $cursor) { pageInfo { hasNextPage, endCursor }, nodes { id, content { ... on Issue { id, number, repository { nameWithOwner } }, ... on PullRequest { id, number, repository { nameWithOwner } } }, fieldValues(first: 50) { nodes { __typename, ... on ProjectV2ItemFieldTextValue { field { ... on ProjectV2Field { name } }, text }, ... on ProjectV2ItemFieldDateValue { field { ... on ProjectV2Field { name } }, date }, ... on ProjectV2ItemFieldNumberValue { field { ... on ProjectV2Field { name } }, number }, ... on ProjectV2ItemFieldSingleSelectValue { field { ... on ProjectV2Field { name } }, name }, ... on ProjectV2ItemFieldIterationValue { field { ... on ProjectV2Field { name } }, title } } } } } } } }"
+ADD_ITEM_TO_PROJECT_MUTATION = "mutation AddItemToProject($projectId: ID!, $contentId: ID!) { addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) { item { id } } }"
 UPDATE_ITEM_FIELD_VALUE_MUTATION = "mutation UpdateFieldValue($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: ProjectV2FieldValue!) { updateProjectV2ItemFieldValue(input: { projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: $value }) { projectV2Item { id } } }"
-UPDATE_LABEL_MUTATION = "mutation UpdateLabel($id: ID!, $name: String!, $color: String!, $description: String) { updateLabel(input: {id: $id, name: $name, color: $color, description: $description}) { label { id } } }"
-UPDATE_MILESTONE_MUTATION = "mutation UpdateMilestone($id: ID!, $title: String, $description: String, $dueOn: DateTime, $state: MilestoneState) { updateMilestone(input: {id: $id, title: $title, description: $description, dueOn: $dueOn, state: $state}) { milestone { id } } }"
 
 
 class GitHubMigrator:
@@ -114,6 +116,7 @@ class GitHubMigrator:
             "target_project_name",
         )
 
+        # Fail fast if critical configuration is missing from all sources for the requested actions.
         required_repo = [
             "SOURCE_TOKEN",
             "TARGET_TOKEN",
@@ -125,10 +128,12 @@ class GitHubMigrator:
         required_proj = ["SOURCE_PROJECT_NAME", "TARGET_PROJECT_NAME"]
 
         missing = []
-        if args.repo:
+        if args.repo or args.reconcile_repo:
             missing.extend(key for key in required_repo if not self.cfg.get(key))
         if args.project:
-            missing.extend(key for key in required_proj if not self.cfg.get(key))
+            missing.extend(
+                key for key in (required_repo + required_proj) if not self.cfg.get(key)
+            )
 
         if missing:
             logging.critical(
@@ -177,7 +182,8 @@ class GitHubMigrator:
             sys.exit(1)
         except Exception as e:
             logging.error(f"An unexpected error occurred: {e}", exc_info=False)
-            return None
+            # The script should halt on unexpected API errors during reconciliation, as state is unknown.
+            raise
 
     # --- Repository Migration ---
     def run_repo_migration(self):
@@ -195,6 +201,21 @@ class GitHubMigrator:
         logging.info(
             f"URL: https://github.com/{self.cfg['TARGET_ORG']}/{self.cfg['TARGET_REPO']}"
         )
+
+    def run_repo_reconciliation(self):
+        logging.info("--- Starting Repository Reconciliation ---")
+        target_repo_id = self._get_or_create_target_repo()
+        if not target_repo_id:
+            logging.critical(
+                "Target repo could not be found or created. Cannot reconcile."
+            )
+            sys.exit(1)
+        label_map = self._reconcile_items(target_repo_id, "labels")
+        milestone_map = self._reconcile_items(target_repo_id, "milestones")
+        self._reconcile_issues(
+            target_repo_id, label_map, milestone_map, is_reconciliation_run=True
+        )
+        logging.info("--- Repository Reconciliation Finished ---")
 
     def _mirror_git_repository(self):
         logging.info("Syncing Git data via 'git mirror'...")
@@ -244,7 +265,7 @@ class GitHubMigrator:
             {"owner": self.cfg["SOURCE_ORG"], "name": self.cfg["SOURCE_REPO"]},
         )
         if not source_repo_data or not source_repo_data.get("repository"):
-            logging.critical(f"Could not fetch source repo data.")
+            logging.critical("Could not fetch source repo data.")
             return None
         target_owner_data = self._execute_with_retries(
             self.target_gql.execute,
@@ -252,7 +273,7 @@ class GitHubMigrator:
             {"login": self.cfg["TARGET_ORG"]},
         )
         if not target_owner_data or not target_owner_data.get("repositoryOwner"):
-            logging.critical(f"Could not resolve target owner ID.")
+            logging.critical("Could not resolve target owner ID.")
             return None
         owner_id = target_owner_data["repositoryOwner"]["id"]
         visibility = (
@@ -282,17 +303,12 @@ class GitHubMigrator:
             if not data:
                 break
             root_key = list(data.keys())[0]
-            connection = None
-            if data.get(root_key):
-                # The top-level key might change (e.g., 'repository', 'node'), but the inner structure
-                # of a paginated connection ('nodes', 'pageInfo') is consistent. This handles that variance.
-                connection_key = (
-                    list(data[root_key].keys())[0] if data[root_key] else None
-                )
-                if connection_key:
-                    connection = data[root_key][connection_key]
-            if not connection:
+            connection_key = (
+                list(data[root_key].keys())[0] if data.get(root_key) else None
+            )
+            if not connection_key:
                 break
+            connection = data[root_key][connection_key]
             nodes.extend(connection["nodes"])
             if not connection["pageInfo"]["hasNextPage"]:
                 break
@@ -332,8 +348,6 @@ class GitHubMigrator:
         for name, s_item in source_items.items():
             variables = {k: v for k, v in s_item.items() if k not in ["id", "number"]}
             if t_item := target_items.get(name):
-                # Why do a deep comparison? To achieve idempotency. We only send an update
-                # API call if a value has actually changed, saving API quota and time.
                 if any(
                     str(t_item.get(k)) != str(s_item.get(k))
                     for k in variables
@@ -363,8 +377,11 @@ class GitHubMigrator:
         if item_type == "milestones":
             return {item["number"]: item["id"] for item in refreshed_target_items}
 
-    def _reconcile_issues(self, target_repo_id, label_map, milestone_map):
-        logging.info("Reconciling issues and comments...")
+    def _reconcile_issues(
+        self, target_repo_id, label_map, milestone_map, is_reconciliation_run=False
+    ):
+        log_action = "Reconciling" if is_reconciliation_run else "Migrating"
+        logging.info(f"{log_action} issues and comments...")
         migrated_issue_map = self._build_migrated_issue_map()
         source_issues = self._fetch_all_paginated(
             self.source_gql,
@@ -372,57 +389,105 @@ class GitHubMigrator:
             {"owner": self.cfg["SOURCE_ORG"], "name": self.cfg["SOURCE_REPO"]},
         )
         for s_issue in source_issues:
-            if s_issue["number"] in migrated_issue_map:
-                continue
-            logging.info(
-                f"Migrating source issue #{s_issue['number']}: '{s_issue['title']}'"
-            )
-            migration_marker = f"Migrated from {self.cfg['SOURCE_ORG']}/{self.cfg['SOURCE_REPO']}#{s_issue['number']}"
-            original_author = f"**Original author: @{s_issue['author']['login'] if s_issue.get('author') else 'ghost'}**"
-            new_body = f"{migration_marker}\n{original_author}\n\n---\n\n{s_issue['body'] or ''}"
-            variables = {
-                "repoId": target_repo_id,
-                "title": s_issue["title"],
-                "body": new_body,
-                "labelIds": [
-                    label_map[label["name"]]
-                    for label in s_issue["labels"]["nodes"]
-                    if label["name"] in label_map
-                ],
-                "milestoneId": milestone_map.get(
+            if target_issue_obj := migrated_issue_map.get(s_issue["number"]):
+                if not is_reconciliation_run:
+                    continue
+                logging.debug(
+                    f"Reconciling existing issue #{s_issue['number']} -> #{target_issue_obj['number']}"
+                )
+                desired_state = {
+                    "id": target_issue_obj["id"],
+                    "state": s_issue["state"],
+                    "title": s_issue["title"],
+                    "labelIds": [
+                        label_map[label["name"]]
+                        for label in s_issue["labels"]["nodes"]
+                        if label["name"] in label_map
+                    ],
+                    "milestoneId": milestone_map.get(
+                        s_issue.get("milestone", {}).get("number")
+                    )
+                    if s_issue.get("milestone")
+                    else None,
+                }
+                current_labels = {
+                    label["name"] for label in target_issue_obj["labels"]["nodes"]
+                }
+                desired_labels = {label["name"] for label in s_issue["labels"]["nodes"]}
+                current_milestone_num = (
+                    target_issue_obj.get("milestone", {}).get("number")
+                    if target_issue_obj.get("milestone")
+                    else None
+                )
+                desired_milestone_num = (
                     s_issue.get("milestone", {}).get("number")
+                    if s_issue.get("milestone")
+                    else None
                 )
-                if s_issue.get("milestone")
-                else None,
-            }
-            created_issue_data = self._execute_with_retries(
-                self.target_gql.execute,
-                CREATE_ISSUE_MUTATION,
-                {k: v for k, v in variables.items() if v is not None},
-            )
-            if not created_issue_data:
-                logging.error(
-                    f"Failed to create issue for source #{s_issue['number']}. Skipping."
+                if (
+                    desired_state["state"] != target_issue_obj["state"]
+                    or desired_state["title"] != target_issue_obj["title"]
+                    or current_labels != desired_labels
+                    or current_milestone_num != desired_milestone_num
+                ):
+                    logging.info(
+                        f"Updating target issue #{target_issue_obj['number']} to match source #{s_issue['number']}"
+                    )
+                    self._execute_with_retries(
+                        self.target_gql.execute,
+                        UPDATE_ISSUE_MUTATION,
+                        {k: v for k, v in desired_state.items() if v is not None},
+                    )
+            else:
+                if is_reconciliation_run:
+                    continue
+                logging.info(
+                    f"Creating new issue for source #{s_issue['number']}: '{s_issue['title']}'"
                 )
-                continue
-            t_issue_id = created_issue_data["createIssue"]["issue"]["id"]
-            # Why migrate comments inside the issue loop? To maintain conversational context and
-            # ensure that if issue creation fails, its comments aren't orphaned or missed.
-            for comment in sorted(
-                s_issue["comments"]["nodes"], key=lambda c: c["createdAt"]
-            ):
-                comment_body = f"**Original comment by @{comment['author']['login'] if comment.get('author') else 'ghost'} on {comment['createdAt']}**\n\n---\n\n{comment['body']}"
-                self._execute_with_retries(
+                migration_marker = f"Migrated from {self.cfg['SOURCE_ORG']}/{self.cfg['SOURCE_REPO']}#{s_issue['number']}"
+                original_author = f"**Original author: @{s_issue['author']['login'] if s_issue.get('author') else 'ghost'}**"
+                new_body = f"{migration_marker}\n{original_author}\n\n---\n\n{s_issue['body'] or ''}"
+                variables = {
+                    "repoId": target_repo_id,
+                    "title": s_issue["title"],
+                    "body": new_body,
+                    "labelIds": [
+                        label_map[label["name"]]
+                        for label in s_issue["labels"]["nodes"]
+                        if label["name"] in label_map
+                    ],
+                    "milestoneId": milestone_map.get(
+                        s_issue.get("milestone", {}).get("number")
+                    )
+                    if s_issue.get("milestone")
+                    else None,
+                }
+                created_issue_data = self._execute_with_retries(
                     self.target_gql.execute,
-                    ADD_COMMENT_MUTATION,
-                    {"subjectId": t_issue_id, "body": comment_body},
+                    CREATE_ISSUE_MUTATION,
+                    {k: v for k, v in variables.items() if v is not None},
                 )
-            if s_issue["state"] == "CLOSED":
-                self._execute_with_retries(
-                    self.target_gql.execute,
-                    CLOSE_ISSUE_MUTATION,
-                    {"issueId": t_issue_id},
-                )
+                if not created_issue_data:
+                    logging.error(
+                        f"Failed to create issue for source #{s_issue['number']}. Skipping."
+                    )
+                    continue
+                t_issue_id = created_issue_data["createIssue"]["issue"]["id"]
+                for comment in sorted(
+                    s_issue["comments"]["nodes"], key=lambda c: c["createdAt"]
+                ):
+                    comment_body = f"**Original comment by @{comment['author']['login'] if comment.get('author') else 'ghost'} on {comment['createdAt']}**\n\n---\n\n{comment['body']}"
+                    self._execute_with_retries(
+                        self.target_gql.execute,
+                        ADD_COMMENT_MUTATION,
+                        {"subjectId": t_issue_id, "body": comment_body},
+                    )
+                if s_issue["state"] == "CLOSED":
+                    self._execute_with_retries(
+                        self.target_gql.execute,
+                        CLOSE_ISSUE_MUTATION,
+                        {"issueId": t_issue_id},
+                    )
 
     def _build_migrated_issue_map(self):
         id_map, marker_text = (
@@ -449,9 +514,17 @@ class GitHubMigrator:
     def run_project_migration(self):
         logging.info("--- Starting Project (V2) Migration ---")
         source_project, target_project = self._get_or_create_target_project()
+        if not source_project or not target_project:
+            logging.critical(
+                "Could not get or create source/target projects. Aborting."
+            )
+            sys.exit(1)
         target_fields = self._reconcile_project_fields(source_project, target_project)
         self._reconcile_project_items(source_project, target_project, target_fields)
         logging.info("--- Project (V2) Migration Finished ---")
+        logging.warning(
+            "Project Views (Board, Table, etc.) are not supported by the API and must be recreated manually in the GitHub UI."
+        )
 
     def _get_or_create_target_project(self):
         s_owner, t_owner = self.cfg["SOURCE_ORG"], self.cfg["TARGET_ORG"]
@@ -478,17 +551,13 @@ class GitHubMigrator:
                 CREATE_PROJECT_MUTATION,
                 {"ownerId": owner_id, "title": t_proj},
             )
-            target_project = self._get_project_data(
-                t_owner, t_proj
-            )  # Re-fetch to get the new project's data
+            target_project = self._get_project_data(t_owner, t_proj)
         return source_project, target_project
 
     def _reconcile_project_fields(self, source_project, target_project):
-        logging.info("Reconciling project fields...")
+        logging.info("Reconciling project custom fields...")
         source_fields = {f["name"]: f for f in source_project["fields"]["nodes"]}
         target_fields = {f["name"]: f for f in target_project["fields"]["nodes"]}
-        # Why is there a hardcoded list of fields to skip? These are standard, non-customizable
-        # fields that are automatically present in every project and cannot be created via the API.
         standard_fields = {
             "Title",
             "Assignees",
@@ -501,32 +570,45 @@ class GitHubMigrator:
         for name, field in source_fields.items():
             if name in target_fields or name in standard_fields:
                 continue
-            logging.debug(
-                f"Creating missing field in target project: '{name}' ({field['dataType']})"
+            logging.info(
+                f"Creating missing custom field in target project: '{name}' ({field['dataType']})"
             )
-            variables = {
-                "projectId": target_project["id"],
-                "dataType": field["dataType"],
-                "name": name,
-                "options": [{"name": opt["name"]} for opt in field.get("options", [])]
-                if field["dataType"] == "SINGLE_SELECT"
-                else None,
-            }
-            self._execute_with_retries(
-                self.target_gql.execute,
-                CREATE_FIELD_MUTATION,
-                {k: v for k, v in variables.items() if v is not None},
-            )
+            if field["dataType"] == "ITERATION":
+                input_obj = {
+                    "projectId": target_project["id"],
+                    "name": name,
+                    "configuration": field.get("configuration", {}),
+                }
+                self._execute_with_retries(
+                    self.target_gql.execute,
+                    CREATE_ITERATION_FIELD_MUTATION,
+                    {"input": input_obj},
+                )
+            else:
+                input_obj = {
+                    "projectId": target_project["id"],
+                    "dataType": field["dataType"],
+                    "name": name,
+                }
+                if field["dataType"] == "SINGLE_SELECT":
+                    input_obj["singleSelectOptions"] = [
+                        {
+                            "name": opt["name"],
+                            "color": opt["color"],
+                            "description": opt["description"] or "",
+                        }
+                        for opt in field.get("options", [])
+                    ]
+                self._execute_with_retries(
+                    self.target_gql.execute, CREATE_FIELD_MUTATION, {"input": input_obj}
+                )
         refreshed_target_project = self._get_project_data(
             self.cfg["TARGET_ORG"], target_project["title"]
         )
         return {f["name"]: f for f in refreshed_target_project["fields"]["nodes"]}
 
     def _reconcile_project_items(self, source_project, target_project, target_fields):
-        logging.info("Reconciling project items and their field values...")
-        # Why build the issue map here again? To ensure we have the most up-to-date
-        # mapping between source and target issues, especially if the repo migration
-        # just ran in the same session.
+        logging.info("Reconciling all project items and their field values...")
         migrated_issue_map = self._build_migrated_issue_map()
         source_item_map = self._build_project_item_map(
             source_project["id"], f"{self.cfg['SOURCE_ORG']}/{self.cfg['SOURCE_REPO']}"
@@ -554,18 +636,28 @@ class GitHubMigrator:
                     "id": new_item_data["addProjectV2ItemById"]["item"]["id"],
                     "fieldValues": {},
                 }
+            else:
+                logging.debug(
+                    f"Checking existing project item for issue #{target_issue_num}..."
+                )
             for field_name, source_value in s_item_data["fieldValues"].items():
                 if field_name not in target_fields:
+                    logging.debug(
+                        f"Field '{field_name}' not found in target project, skipping value update."
+                    )
                     continue
                 if str(t_item_data["fieldValues"].get(field_name)) != str(source_value):
-                    logging.debug(
-                        f"Updating field '{field_name}' for issue #{target_issue_num} to '{source_value}'"
+                    logging.info(
+                        f"  -> Updating field '{field_name}' for issue #{target_issue_num} from '{t_item_data['fieldValues'].get(field_name)}' to '{source_value}'"
                     )
                     if not (
                         value_obj := self._get_gql_field_value(
                             target_fields[field_name], source_value
                         )
                     ):
+                        logging.warning(
+                            f"     Could not construct valid value for field '{field_name}'. Skipping update."
+                        )
                         continue
                     variables = {
                         "projectId": target_project["id"],
@@ -577,6 +669,10 @@ class GitHubMigrator:
                         self.target_gql.execute,
                         UPDATE_ITEM_FIELD_VALUE_MUTATION,
                         variables,
+                    )
+                else:
+                    logging.debug(
+                        f"  -> Field '{field_name}' for issue #{target_issue_num} is already in sync ('{source_value}')."
                     )
 
     def _get_project_data(self, owner, project_name):
@@ -606,8 +702,6 @@ class GitHubMigrator:
                 or content.get("repository", {}).get("nameWithOwner") != repo_full_name
             ):
                 continue
-            # Why list(fv.values())[-1]? This is a shortcut to get the actual value from a
-            # ProjectV2ItemFieldValue union type (e.g., text, number, date) without a complex conditional.
             item_map[content["number"]] = {
                 "id": item["id"],
                 "fieldValues": {
@@ -619,27 +713,24 @@ class GitHubMigrator:
         return item_map
 
     def _get_gql_field_value(self, field, value):
-        dt = field["dataType"]
-        if dt == "TEXT":
-            return {"text": str(value)}
-        if dt == "NUMBER":
-            return {"number": float(value)}
-        if dt == "DATE":
-            return {"date": str(value)}
-        if dt == "SINGLE_SELECT":
-            # Why search for the option? The API requires the GraphQL ID of the select option, not its string value.
+        dt, field_name = field.get("dataType"), field.get("name")
+        if field_name == "Status" or dt == "SINGLE_SELECT":
             if option := next(
                 (opt for opt in field.get("options", []) if opt["name"] == value), None
             ):
                 return {"singleSelectOptionId": option["id"]}
+        elif dt == "TEXT":
+            return {"text": str(value)}
+        elif dt == "NUMBER":
+            return {"number": float(value)}
+        elif dt == "DATE":
+            return {"date": str(value)}
+        logging.warning(
+            f"Could not format value for field '{field_name}' with type '{dt}'. This field may not be updated."
+        )
         return None
 
     class _GraphQLClient:
-        """
-        A simple, embedded client for executing GitHub GraphQL queries.
-        It now inspects errors to raise specific, actionable exceptions.
-        """
-
         def __init__(self, token):
             self._headers = {"Authorization": f"token {token}"}
 
@@ -658,7 +749,9 @@ class GitHubMigrator:
                 if first_error.get("type") == "INSUFFICIENT_SCOPES":
                     raise InsufficientScopesError(msg)
                 else:
-                    raise Exception(f"GraphQL query failed: {msg}")
+                    raise Exception(
+                        f"GraphQL query failed for variables {variables}: {msg}"
+                    )
             return data.get("data")
 
 
@@ -701,6 +794,22 @@ def main():
         epilog="Configuration is resolved in order: CLI > Environment Variables > Config File.",
         formatter_class=argparse.RawTextHelpFormatter,
     )
+    action_group = parser.add_argument_group("Actions")
+    action_group.add_argument(
+        "--repo",
+        action="store_true",
+        help="Run the initial repository migration (Git data, labels, milestones, issues).",
+    )
+    action_group.add_argument(
+        "--reconcile-repo",
+        action="store_true",
+        help="Update existing migrated issues in the target repo to match the source (state, labels, etc.).",
+    )
+    action_group.add_argument(
+        "--project",
+        action="store_true",
+        help="Run the Project (V2) board migration/sync. This is always a reconciliation.",
+    )
     verb_group = parser.add_mutually_exclusive_group()
     verb_group.add_argument(
         "-q",
@@ -714,16 +823,6 @@ def main():
         action="count",
         default=1,
         help="Increase verbosity. -v for INFO (default), -vv for DEBUG.",
-    )
-    parser.add_argument(
-        "--repo",
-        action="store_true",
-        help="Run the repository migration (issues, labels, etc.).",
-    )
-    parser.add_argument(
-        "--project",
-        action="store_true",
-        help="Run the Project (V2) board migration/sync.",
     )
     conf_group = parser.add_argument_group(
         "Configuration (overrides ENV vars and config file)"
@@ -763,28 +862,28 @@ def main():
 
     if args.quiet:
         log_level = logging.WARNING
-    elif args.verbose == 1:
-        log_level = logging.INFO
-    else:
+    elif args.verbose >= 2:
         log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
     setup_logging(log_level)
 
-    if not args.repo and not args.project:
-        parser.error("No action requested. Please specify --repo, --project, or both.")
+    if not any([args.repo, args.reconcile_repo, args.project]):
+        parser.error(
+            "No action requested. Please specify --repo, --reconcile-repo, or --project."
+        )
 
     try:
         migrator = GitHubMigrator(cli_args=args)
         if args.repo:
             migrator.run_repo_migration()
+        if args.reconcile_repo:
+            migrator.run_repo_reconciliation()
         if args.project:
             migrator.run_project_migration()
         logging.info("All requested operations completed successfully.")
-    except InsufficientScopesError as e:
-        # This global catch is a final backstop, even though the retry wrapper handles it.
-        logging.critical(
-            "Permissions error caught at top level. Please check your PAT scopes."
-        )
-        sys.exit(1)
+    except InsufficientScopesError:
+        sys.exit(1)  # The specific error is logged in the retry wrapper
     except Exception as e:
         logging.critical(
             f"A fatal, unexpected error occurred: {e}",
